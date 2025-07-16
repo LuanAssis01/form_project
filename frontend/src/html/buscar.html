@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar Servidor - Prefeitura</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    
+    <link rel="stylesheet" href="../css/styles-buscar-alterar-deletar.css" />
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-content">
+            <h1>Buscar Servidor</h1>
+            <a href="home.html" class="btn-voltar">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-container">
+            <form id="form-busca">
+                <div class="input-group">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="busca" name="busca" placeholder="Digite o nome, CPF ou matrícula do servidor" required />
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="resultado" class="results-container">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Nome Completo</th>
+                        <th>Matrícula</th>
+                        <th>CPF</th>
+                        <th>Cargo</th>
+                        <th class="actions-column">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="resultado-tbody">
+                    </tbody>
+            </table>
+            
+            <div id="no-results" class="no-results hidden">
+                <i class="fa-solid fa-inbox"></i>
+                <p>Nenhum servidor encontrado</p>
+                <span>Tente refinar seus termos de busca.</span>
+            </div>
+        </div>
+    </main>
+
+    <script src="buscar-servidor.js"></script>
+</body>
+</html>
