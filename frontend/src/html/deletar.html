@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deletar Servidor - Prefeitura</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="../css/styles-buscar-alterar-deletar.css" />
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-content">
+            <h1>Deletar Servidor</h1>
+            <a href="home.html" class="btn-voltar">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="busca-container" class="search-container">
+            <form id="form-busca">
+                <div class="input-group">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="cpfBusca" name="cpfBusca" placeholder="Digite o CPF do servidor para buscar" required />
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="dados-servidor" class="confirmation-box" style="display:none;">
+            <div class="confirmation-header">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h2>Confirmar Exclusão</h2>
+            </div>
+            <div class="confirmation-body">
+                <p>Você tem certeza que deseja excluir permanentemente o servidor abaixo? <strong>Esta ação não pode ser desfeita.</strong></p>
+                <div class="server-details">
+                    <p><strong>Nome:</strong> <span id="nome-servidor"></span></p>
+                    <p><strong>CPF:</strong> <span id="cpf-servidor"></span></p>
+                    <p><strong>Matrícula:</strong> <span id="matricula-servidor"></span></p>
+                </div>
+            </div>
+            <div class="confirmation-actions">
+                <button type="button" id="btn-cancelar" class="btn btn-secondary">Cancelar</button>
+                <button type="button" id="btn-deletar" class="btn btn-danger">
+                    <i class="fa-solid fa-trash"></i> Sim, quero excluir
+                </button>
+            </div>
+        </div>
+
+        <div id="mensagem" class="mensagem hidden"></div>
+    </main>
+
+    <script src="deletar-servidor.js"></script>
+</body>
+</html>

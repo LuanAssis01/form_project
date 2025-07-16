@@ -1,24 +1,13 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from config import Config
+from app import create_app, db
+from app.models import *
 
-db = SQLAlchemy()
+app = create_app()
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-
-    db.init_app(app)
-
-    @app.route("/")
-    def index():
-        return "✅ API Flask conectada ao PostgreSQL com sucesso!"
-
+@app.cli.command('create-tables')
+def create_tables():
     with app.app_context():
-        db.create_all()  # cria tabelas automaticamente
+        db.create_all()
+        print("Tabelas criadas com sucesso!")
 
-    return app
-
-if __name__ == "__main__":
-    app = create_app()
+if __name__ == '__main__':
     app.run(debug=True)
