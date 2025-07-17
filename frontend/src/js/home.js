@@ -1,21 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
     const logoutBtn = document.getElementById("logout-btn");
 
-    logoutBtn.addEventListener("click", async function () {
-        try {
-            const response = await fetch("http://127.0.0.1:5000/auth/logout", {
-                method: "POST",
-                credentials: "include", // envia o cookie da sessão
-            });
+    if (logoutBtn) { 
+        logoutBtn.addEventListener("click", async function () {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/auth/logout", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
 
-            if (response.ok) {
-                window.location.href = "login.html";
-            } else {
-                alert("Erro ao fazer logout. Tente novamente.");
+                const data = await response.json();  
+
+                if (response.ok) {
+                    localStorage.removeItem('authState');
+                    sessionStorage.removeItem('sessionData');
+                    
+                    alert(`Login realizado com sucesso!`);
+                    window.location.href = "login.html";
+                } else {
+                    console.error("Erro no logout:", data);
+                    alert(`Erro ao fazer logout: ${data.erro || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                console.error("Erro na requisição de logout:", error);
+                alert("Falha na comunicação com o servidor. Verifique sua conexão.");
             }
-        } catch (error) {
-            console.error("Erro ao desconectar:", error);
-            alert("Erro na conexão com o servidor.");
-        }
-    });
+        });
+    } else {
+        console.warn("Botão de logout não encontrado no DOM");
+    }
 });

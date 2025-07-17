@@ -13,18 +13,30 @@ def create_app():
     app.secret_key = 'uma_chave_super_secreta_aqui'
     app.config.from_object('config.Config')
 
-    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config.update(
+        SESSION_TYPE='filesystem',
+        SESSION_COOKIE_NAME='flask_session',
+        SESSION_COOKIE_SECURE=False,         
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',        
+        SESSION_COOKIE_DOMAIN=None           
+    )
     Session(app)
 
-    frontend_origin = "http://127.0.0.1:5500" # Verifique se a porta está correta
-    CORS(app, supports_credentials=True, origins=[frontend_origin])
+    frontend_origin = "http://127.0.0.1:5500"
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=[frontend_origin],
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
 
     print(f"Tentando conectar em: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     db.init_app(app)
     login_manager.init_app(app)
 
-    # 🔐 Handler para APIs REST: evita redirecionamentos para rotas HTML
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify({'erro': 'Usuário não autenticado'}), 401

@@ -46,7 +46,13 @@ def login():
 @auth_routes.route('/logout', methods=['POST'])
 @login_required
 def logout():
+    print("Tentando fazer logout - usuário atual:", current_user.is_authenticated)
+    if not current_user.is_authenticated:
+        print("Nenhum usuário autenticado para fazer logout!")
+        return jsonify({'erro': 'Nenhum usuário autenticado'}), 401
+    
     logout_user()
+    print("Logout realizado com sucesso")
     return jsonify({'mensagem': 'Logout realizado com sucesso'}), 200
 
 @auth_routes.route('/usuario', methods=['GET'])

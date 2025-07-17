@@ -1,6 +1,6 @@
+from sqlalchemy.orm import joinedload
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-# Importando todos os models necessários
 from app.models import (
     db, Formulario, DadosPessoais, DadosSensiveis, DadosFuncionais, 
     Filiacao, DadosFormacao, PosGraduacao, Mestrado, Doutorado, DadosBancarios, 
@@ -11,19 +11,16 @@ import traceback
 routes = Blueprint('routes', __name__)
 
 def extrair_dados(dados, modelo_classe, campos):
-    """Cria uma instância de um modelo a partir de um dicionário de dados."""
     if not dados:
         return None
     instancia = modelo_classe()
     for campo in campos:
-        # Usamos .get() para não dar erro se a chave não existir no JSON
         valor = dados.get(campo)
         if valor is not None:
             setattr(instancia, campo, valor)
     return instancia
 
 def serializar_formulario(f):
-    """Converte um objeto Formulario completo em um dicionário para resposta JSON."""
     def to_dict(obj, campos):
         if not obj: return None
         return {campo: getattr(obj, campo, None) for campo in campos}
@@ -51,8 +48,6 @@ def serializar_formulario(f):
         'dependentes': list_to_dict(f.dependentes, ['nome', 'sexo', 'parentesco', 'cpf', 'data_nascimento', 'possui_deficiencia']),
     }
 
-# --- ROTAS CRUD ---
-
 @routes.route('/servidores', methods=['POST'])
 @login_required
 def criar_ficha():
@@ -63,7 +58,6 @@ def criar_ficha():
     try:
         nova_ficha = Formulario(usuario_id=current_user.id)
 
-        # Relacionamentos 1-para-1
         nova_ficha.dados_pessoais = extrair_dados(dados.get('dados_pessoais'), DadosPessoais, ['nome', 'nome_social', 'data_nascimento', 'estado_civil', 'nacionalidade', 'naturalidade', 'uf', 'sexo'])
         nova_ficha.dados_sensiveis = extrair_dados(dados.get('dados_sensiveis'), DadosSensiveis, ['rg', 'orgao_emissor', 'data_emissao', 'cpf', 'pis_pasep', 'certidao_reservista', 'categoria', 'serie'])
         nova_ficha.dados_funcionais = extrair_dados(dados.get('dados_funcionais'), DadosFuncionais, ['cargo', 'matricula', 'classificacao', 'tipo_sanguineo', 'possui_deficiencia'])
@@ -77,7 +71,6 @@ def criar_ficha():
         nova_ficha.titulo_eleitoral = extrair_dados(dados.get('titulo_eleitoral'), TituloEleitoral, ['numero_inscricao', 'data_emissao', 'zona', 'secao', 'municipio'])
         nova_ficha.certidao_civil = extrair_dados(dados.get('certidao_civil'), CertidaoCivil, ['tipo', 'emissor', 'livro', 'folha', 'matricula', 'cartorio', 'municipio', 'uf'])
 
-        # Relacionamentos 1-para-N (Listas)
         if dados.get('dependentes'):
             for dep_data in dados['dependentes']:
                 dependente = extrair_dados(dep_data, Dependente, ['nome', 'sexo', 'parentesco', 'cpf', 'data_nascimento', 'possui_deficiencia'])
@@ -102,7 +95,6 @@ def criar_ficha():
 @routes.route('/servidores', methods=['GET'])
 @login_required
 def listar_fichas():
-    # Retorna uma lista resumida para melhor performance.
     fichas = db.session.query(
         Formulario.id,
         DadosPessoais.nome,
@@ -131,7 +123,6 @@ def atualizar_ficha(id):
     dados = request.get_json()
 
     try:
-        # Lógica de atualização genérica para relacionamentos 1-para-1
         def atualizar_sub_modelo(sub_modelo_nome, modelo_classe):
             if sub_modelo_nome in dados:
                 sub_dados = dados.get(sub_modelo_nome)
@@ -146,11 +137,9 @@ def atualizar_ficha(id):
                     if hasattr(instancia_existente, campo):
                         setattr(instancia_existente, campo, valor)
         
-        # Atualiza todos os sub-modelos 1-para-1
         atualizar_sub_modelo('dados_pessoais', DadosPessoais)
         atualizar_sub_modelo('dados_sensiveis', DadosSensiveis)
         atualizar_sub_modelo('dados_funcionais', DadosFuncionais)
-        # ... adicione todos os outros aqui ...
         atualizar_sub_modelo('filiacao', Filiacao)
         atualizar_sub_modelo('formacao', DadosFormacao)
         atualizar_sub_modelo('pos_graduacao', PosGraduacao)
@@ -161,19 +150,17 @@ def atualizar_ficha(id):
         atualizar_sub_modelo('titulo_eleitoral', TituloEleitoral)
         atualizar_sub_modelo('certidao_civil', CertidaoCivil)
 
-
-        # Lógica de atualização para relacionamentos 1-para-N (apaga e recria)
         if 'dependentes' in dados:
-            [db.session.delete(d) for d in ficha.dependentes] # Apaga antigos
+            [db.session.delete(d) for d in ficha.dependentes]
             if dados['dependentes']:
-                for dep_data in dados['dependentes']: # Cria novos
+                for dep_data in dados['dependentes']:
                     dependente = extrair_dados(dep_data, Dependente, ['nome', 'sexo', 'parentesco', 'cpf', 'data_nascimento', 'possui_deficiencia'])
                     if dependente: ficha.dependentes.append(dependente)
 
         if 'redes_sociais' in dados:
-            [db.session.delete(r) for r in ficha.redes_sociais] # Apaga antigos
+            [db.session.delete(r) for r in ficha.redes_sociais]
             if dados['redes_sociais']:
-                for rede_data in dados['redes_sociais']: # Cria novos
+                for rede_data in dados['redes_sociais']:
                     rede = extrair_dados(rede_data, RedeSocial, ['facebook', 'instagram', 'linkedin', 'whatsapp', 'telegram', 'outros'])
                     if rede: ficha.redes_sociais.append(rede)
 
@@ -189,7 +176,6 @@ def atualizar_ficha(id):
 @routes.route('/servidores/<int:id>', methods=['DELETE'])
 @login_required
 def deletar_ficha(id):
-    # Lembre-se que isso depende da configuração 'cascade' nos models!
     ficha = Formulario.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     
     try:
@@ -200,3 +186,40 @@ def deletar_ficha(id):
         db.session.rollback()
         traceback.print_exc()
         return jsonify({'erro': 'Ocorreu um erro interno ao excluir a ficha', 'detalhes': str(e)}), 500
+    
+@routes.route('/servidores/cpf/<cpf>', methods=['GET'])
+# @login_required
+def buscar_por_cpf(cpf):
+    try: 
+        cpf_limpo = ''.join(filter(str.isdigit, cpf))
+        
+        ficha = db.session.query(Formulario)\
+            .join(DadosSensiveis)\
+            .options(
+                joinedload(Formulario.dados_pessoais),
+                joinedload(Formulario.dados_sensiveis),
+                joinedload(Formulario.dados_funcionais),
+                joinedload(Formulario.filiacao),
+                joinedload(Formulario.formacao),
+                joinedload(Formulario.pos_graduacao),
+                joinedload(Formulario.mestrado),
+                joinedload(Formulario.doutorado),
+                joinedload(Formulario.dados_bancarios),
+                joinedload(Formulario.informacoes_complementares),
+                joinedload(Formulario.titulo_eleitoral),
+                joinedload(Formulario.certidao_civil),
+                joinedload(Formulario.redes_sociais),
+                joinedload(Formulario.dependentes)
+            )\
+            .filter(DadosSensiveis.cpf == cpf_limpo)\
+            .first()
+
+        if not ficha:
+            return jsonify({'erro': 'Nenhum servidor encontrado com este CPF'}), 404
+
+        return jsonify(serializar_formulario(ficha)), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'erro': 'Erro ao buscar servidor', 'detalhes': str(e)}), 500
+
